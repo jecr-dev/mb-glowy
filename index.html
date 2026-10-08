@@ -5,7 +5,6 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>MB Glowy | Estética Profesional</title>
     <link rel="stylesheet" href="css/style.css">
-    <!-- Iconos para las redes sociales -->
     <link rel="stylesheet" href="https://cloudflare.com">
 </head>
 <body>
@@ -23,41 +22,64 @@
         </div>
     </header>
 
-    <!-- Sección de Bienvenida / Hero -->
+    <!-- HÉROE: Sección de entrada llamativa -->
     <section class="hero">
         <h1>Tu bienestar, nuestra esencia</h1>
-        <p>En MB Glowy combinamos ciencia, vanguardia y un cuidado personalizado para resaltar tu brillo natural. Agenda tu evaluación y vive una experiencia premium pensada exclusivamente para ti.</p>
-        <!-- Enlace temporal para la agenda, cámbialo por tu sistema o WhatsApp definitivo -->
-        <a href="https://wa.me" target="_blank" class="btn-agenda">Agendar Cita <i class="fa-solid fa-calendar-days"></i></a>
+        <p>En MB Glowy combinamos vanguardia y cuidado personalizado para resaltar tu brillo natural. Vive una experiencia premium pensada exclusivamente para ti.</p>
+        <a href="https://wa.me" target="_blank" class="btn-agenda">Agendar Cita en Línea <i class="fa-solid fa-calendar-days"></i></a>
     </section>
 
-    <!-- Sección Informativa Corta de Servicios Destacados -->
-    <section>
-        <h2>Servicios Destacados</h2>
+    <!-- WIDGET 1: Avance de Productos Recomendados -->
+    <section class="bg-soft">
+        <h2>Productos Recomendados</h2>
+        <p class="section-intro">Seleccionamos cuidadosamente fórmulas dermatológicas de alta gama para prolongar el efecto de tus tratamientos en casa.</p>
+        
         <div class="grid-container">
-            <!-- Servicio 1 -->
             <div class="card">
-                <div class="card-img" style="display: flex; align-items: center; justify-content: center; color: #8C655A;"><i class="fa-solid fa-sparkles fa-3x"></i></div>
-                <div class="card-content">
-                    <h3>Tratamientos Faciales</h3>
-                    <p>Limpiezas profundas, hidratación y renovación celular adaptadas a las necesidades específicas de tu piel.</p>
+                <div class="card-img" style="display: flex; align-items: center; justify-content: center; color: #8C655A; background-color: #F8F1EB;"><i class="fa-solid fa-bottle-droplet fa-3x"></i></div>
+                <div class="card-content" style="text-align: center;">
+                    <h3>Sérum Renovador Diario</h3>
+                    <p>Fórmula concentrada con ácido hialurónico para un efecto glow inmediato.</p>
+                    <a href="productos.html" class="btn-secondary">Ver Catálogo</a>
                 </div>
             </div>
-            <!-- Servicio 2 -->
             <div class="card">
-                <div class="card-img" style="display: flex; align-items: center; justify-content: center; color: #8C655A;"><i class="fa-solid fa-hand-holding-heart fa-3x"></i></div>
-                <div class="card-content">
-                    <h3>Cuidado Corporal</h3>
-                    <p>Procedimientos diseñados para moldear, tonificar y relajar tu cuerpo en un ambiente de máxima desconexión.</p>
+                <div class="card-img" style="display: flex; align-items: center; justify-content: center; color: #8C655A; background-color: #F8F1EB;"><i class="fa-solid fa-sun fa-3x"></i></div>
+                <div class="card-content" style="text-align: center;">
+                    <h3>Protección UV Anti-edad</h3>
+                    <p>Protector solar con acabado sedoso, ideal para usar debajo del maquillaje.</p>
+                    <a href="productos.html" class="btn-secondary">Ver Detalles</a>
                 </div>
             </div>
-            <!-- Servicio 3 -->
-            <div class="card">
-                <div class="card-img" style="display: flex; align-items: center; justify-content: center; color: #8C655A;"><i class="fa-solid fa-wand-magic-sparkles fa-3x"></i></div>
-                <div class="card-content">
-                    <h3>Asesoría Estética</h3>
-                    <p>Evaluaciones personalizadas guiadas por profesionales para trazar tu plan de cuidado ideal en cabina y hogar.</p>
-                </div>
+        </div>
+    </section>
+
+    <!-- WIDGET 2: Destacado del Vlog de Bienestar -->
+    <section>
+        <h2>Consejos Profesionales</h2>
+        <p class="section-intro">Explora nuestra bitácora digital con tips, tendencias y guías creadas por nuestras especialistas en estética.</p>
+        
+        <div class="vlog-highlight">
+            <div class="vlog-highlight-text">
+                <span style="font-size: 12px; text-transform: uppercase; color: var(--rose-quartz); font-weight: 600; letter-spacing: 1px;">Último Artículo</span>
+                <h3>5 Rutinas matutinas para una piel radiante</h3>
+                <p>Descubre el orden correcto de aplicación de tus cosméticos y el secreto profesional para maximizar la hidratación durante todo el día.</p>
+                <a href="vlog/index.html" class="btn-agenda" style="padding: 10px 25px; font-size: 12px;">Leer el Vlog <i class="fa-solid fa-arrow-right"></i></a>
+            </div>
+            <div class="vlog-highlight-icon">
+                <i class="fa-solid fa-feather-pointed"></i>
+            </div>
+        </div>
+    </section>
+
+    <!-- WIDGET 3: Acceso Directo a Contacto y Ubicación -->
+    <section class="bg-soft" style="border-top: 1px solid var(--mushroom);">
+        <div style="text-align: center; max-width: 600px; margin: 0 auto;">
+            <h2>¿Listo para visitarnos?</h2>
+            <p style="font-weight: 300; margin-bottom: 30px;">Estamos ubicados en una zona residencial exclusiva, listos para brindarte un momento de máxima desconexión y cuidado.</p>
+            <div style="display: flex; justify-content: center; gap: 20px; flex-wrap: wrap;">
+                <a href="contacto.html" class="btn-secondary" style="margin-top: 0;"><i class="fa-solid fa-map-location-dot"></i> Ver Ubicación</a>
+                <a href="contacto.html" class="btn-secondary" style="margin-top: 0;"><i class="fa-solid fa-clock"></i> Horarios de Atención</a>
             </div>
         </div>
     </section>
@@ -66,7 +88,7 @@
     <footer>
         <p style="margin-bottom: 15px;">&copy; 2026 MB Glowy - Estética Profesional. Todos los derechos reservados.</p>
         <div style="font-size: 20px;">
-            <a href="https://www.instagram.com/mb_glowy?exln=MWozbno0czc2Z2E2dw==" target="_blank" style="color: #F3ECE3; margin: 0 10px; text-decoration: none;"><i class="fab fa-instagram"></i> @mb_glowy</a>
+            <a href="https://instagram.com" target="_blank" style="color: #F3ECE3; margin: 0 10px; text-decoration: none;"><i class="fab fa-instagram"></i> @mb_glowy</a>
         </div>
     </footer>
 
