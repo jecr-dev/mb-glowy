@@ -1,5 +1,5 @@
-const CACHE='mb-glowy-v2';
-const FILES=['./','./index.html','./style.css','./app.js','./logo.jpg','./icon-192.png','./icon-512.png','./manifest.webmanifest'];
+const CACHE='mb-glowy-v3';
+const FILES=['./','./index.html','./style.css','./app.js','./calendar.js','./logo.jpg','./icon-192.png','./icon-512.png','./manifest.webmanifest'];
 self.addEventListener('install',event=>event.waitUntil(caches.open(CACHE).then(cache=>cache.addAll(FILES))));
 self.addEventListener('activate',event=>event.waitUntil(caches.keys().then(keys=>Promise.all(keys.filter(k=>k.startsWith('mb-glowy-')&&k!==CACHE).map(k=>caches.delete(k))))));
 self.addEventListener('fetch',event=>{
