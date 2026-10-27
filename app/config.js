@@ -1,1 +1,1 @@
-window.MB_CONFIG = { url: "", anonKey: "" };
+window.MB_CONFIG = {"url": "https://wbfkttlfbfxpzehpuexq.supabase.co", "anonKey": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6IndiZmt0dGxmYmZ4cHplaHB1ZXhxIiwicm9sZSI6ImFub24iLCJpYXQiOjE3OTMxMTM4MTIsImV4cCI6MjEwODY4OTgxMn0.P-TsdSfewJ2p7RiFjX7BtBd__tAbZNIuynvoLrvZkt8"};
