@@ -110,7 +110,7 @@ footer .wrap{display:flex;justify-content:space-between;flex-wrap:wrap;gap:1rem}
   <section id="servicios" class="band">
     <div class="wrap">
       <h2>Servicios</h2>
-      <p>Elige el tratamiento que necesitas. [Editar lista y precios]</p>
+      <p>Elige el tratamiento que necesitas y consulta sus horarios disponibles.</p>
       <div class="services">
         <article class="service" data-id="limpieza-facial" data-duration="60" data-price="0">
           <h3>Limpieza facial</h3>
@@ -148,10 +148,10 @@ footer .wrap{display:flex;justify-content:space-between;flex-wrap:wrap;gap:1rem}
   <section id="agenda" class="band">
     <div class="wrap">
       <h2>Agenda tu hora</h2>
-      <div id="agenda-root" data-status="coming-soon">
+      <div id="agenda-root" data-status="booking">
         <!-- FUTURO: reemplazar este bloque por el widget o formulario de reservas.
              Los servicios ya tienen data-id, data-duration y data-price para alimentarlo. -->
-        <p>La agenda en línea estará disponible pronto. Mientras tanto, escríbenos y reservamos tu hora.</p>
+        <p>Elige tu tratamiento y encuentra un momento para ti.</p><a class="btn" href="/app/">Ver disponibilidad y reservar</a>
         <a class="btn" href="mailto:contacto@mbglowy.com?subject=Reserva%20de%20hora">Reservar por correo</a>
       </div>
     </div>
@@ -187,8 +187,10 @@ footer .wrap{display:flex;justify-content:space-between;flex-wrap:wrap;gap:1rem}
     <span>© 2026 MB Glowy</span>
     <a href="mailto:contacto@mbglowy.com">contacto@mbglowy.com</a>
   </div>
-</footer>
+<p class="wrap"><a href="/app/#admin">Acceso administración</a></p></footer>
 
 <style>.sr{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0)}</style>
+<script src="/app/config.js"></script>
+<script type="module" src="/app/catalog.js"></script>
 </body>
 </html>
