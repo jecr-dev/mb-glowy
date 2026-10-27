@@ -18,6 +18,10 @@ Página pública `/`; reservas y PWA `/app/`; administración `/app/#admin`.
 7. Entrar en `/app/#admin`, crear servicios y abrir horarios. Cada horario es un bloque de disponibilidad que admite varias citas consecutivas. Cada reserva ocupa la duración del tratamiento (por ejemplo, 300 minutos para 5 horas). Solo se ofrecen inicios cada 5 minutos donde cabe la cita completa, sin solapamientos. Las horas introducidas usan la zona horaria del dispositivo; los listados muestran America/Santiago.
 8. Desde otro navegador, reservar un cupo y verificar el nombre, correo y teléfono en el panel. Verificar que solo el intervalo reservado desaparece y que se puede usar el tiempo restante si cabe otra cita; cancelar para liberar ese intervalo. Intentar reservar simultáneamente el mismo cupo: solo una operación debe confirmarse. Validar que una cuenta sin rol no accede a las reservas ni las modifica.
 
+## Agenda visual para clientas
+
+Después de seleccionar un tratamiento, el calendario mensual marca únicamente los días con disponibilidad. Cada opción muestra inicio y fin completos, con un resumen de fecha, día de la semana y duración. Se muestran doce opciones a la vez y se pueden ampliar con “Ver más horarios”. Cambiar de día o tratamiento borra la selección anterior; todas las fechas usan America/Santiago. No requiere nuevas tablas ni migraciones adicionales a la actualización por duración.
+
 ## Instalar en iPhone
 
 Abrir `https://TU-DOMINIO/app/` en Safari → Compartir → Añadir a pantalla de inicio. También se usa directamente desde el navegador. Los procesos de desarrollo no necesitan ejecutarse para el sitio publicado. No es una app de App Store.
