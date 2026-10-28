@@ -60,7 +60,7 @@ La cola programa el recordatorio para cinco horas antes. El envío real puede re
 
 1. Integrar/publicar la rama del frontend en GitHub, esperar Pages y recargar la app. Crear un bloque de prueba futuro, asignar tratamiento y comuna.
 2. Reservar con un correo propio y dirección de prueba. Debe aparecer **Reservada · por confirmar**.
-3. Esperar el correo de la clienta y el aviso a m.barahona@mbglowy.com. Revisar spam. En el panel, abrir **Estado de envío de correos**: “Enviado” significa aceptado por SMTP, no leído ni entregado a bandeja de entrada.
+3. Esperar el correo de la clienta y el aviso a m.barahona@mbglowy.com. Revisar spam. En el panel, abrir **Estado de los correos**: “Enviado” significa aceptado por SMTP, no leído ni entregado a bandeja de entrada.
 4. Abrir el enlace: ver los datos **sin confirmar automáticamente**. Pulsar **Confirmar mi asistencia**; el panel debe mostrar **Confirmada** y encolarse el recibo.
 5. Editar la cita: el enlace anterior debe caducar y el nuevo correo pedir otra confirmación.
 6. Cancelar y eliminar la reserva; eliminar su bloque. No deben enviarse recordatorios de citas canceladas.
@@ -123,3 +123,9 @@ Ejecutar `supabase/migrations/20261028_booking_gap.sql` en una consulta nueva de
 Una atención que termina a las 12:00, con margen de 20 minutos, permite otra desde las 12:20. Las opciones de inicio siguen en pasos de cinco minutos: el margen es tiempo libre real, no el paso de la cuadrícula. La duración del tratamiento no cambia y siempre debe caber antes del cierre; no se exige una pausa adicional dentro del bloque después de la última cita. Cancelar o vencer una reserva libera su ocupación. No es necesario redesplegar el worker de correo.
 
 Pruebas específicas: `python3 -m unittest discover -s tests -p test_booking_gap.py -v`.
+
+## Ver el estado de los correos en administración
+
+El resumen **Estado de los correos** aparece al inicio del panel. Cada tarjeta de reserva incluye **Correos de esta reserva**, con el aviso para la clienta y para administración, estado y fecha. Los recordatorios futuros aparecen como **Programado**; **Enviado** significa aceptado por Zoho. **Actualizar correos** consulta el progreso sin reiniciar formularios ni perder ediciones pendientes. El detalle completo está disponible mediante **Ver detalle de envíos**. Esta mejora es solo de frontend y no requiere SQL.
+
+Prueba local: `MB_BASE_URL=http://127.0.0.1:8005 node tests/admin-mail-status.cjs` (servidor local y Playwright/Chromium disponibles).
