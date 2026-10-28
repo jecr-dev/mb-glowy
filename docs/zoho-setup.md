@@ -85,3 +85,25 @@ deno check supabase/functions/booking-mailer/index.ts
 ```
 
 Los tests PostgreSQL usan contenedores descartables, nunca producción. Los de navegador simulan la API. Las pruebas SMTP del worker simulan Zoho; los secretos, despliegue y aceptación real por Zoho deben verificarse por separado.
+
+## Si aparece “Could not find the function … in the schema cache”
+
+La página nueva necesita las funciones de `20261028_confirmations_communes.sql`. La publicación de GitHub no ejecuta migraciones de Supabase. En una consulta nueva comprobar:
+
+```sql
+select
+  to_regprocedure('public.expire_pending_bookings()') as vencimientos,
+  to_regprocedure('public.book_slot(uuid,uuid,text,text,text,timestamptz,text,text)') as reservas;
+```
+
+Si alguno es `NULL`, revisar/aplicar la actualización completa `supabase/migrations/20261028_confirmations_communes.sql`. No ejecutar de nuevo `schema.sql`. Si la actualización informa un error, compartir ese error antes de intentar más cambios: la transacción revierte las modificaciones al fallar.
+
+Si ambas funciones existen pero la API aún no las encuentra, recargar únicamente la caché:
+
+```sql
+notify pgrst, 'reload schema';
+```
+
+Esperar unos segundos y recargar la página. Los correos requieren la configuración SMTP y el worker descritos arriba; la migración por sí sola solo encola los envíos.
+
+Prueba adicional del aviso de éxito y errores de versión: `node tests/booking-success.cjs` con servidor local en puerto 8003 (o `MB_BASE_URL`). El aviso debe aparecer después de guardar, incluso si falla la recarga, y nunca ante una reserva rechazada.

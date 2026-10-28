@@ -74,6 +74,8 @@ const assert = require('node:assert/strict');
     await page.locator('#booking input[type=checkbox]').check();
     await page.getByRole('button', { name: 'Reservar · por confirmar', exact: true }).click();
     await page.getByRole('status').filter({ hasText: 'Reserva recibida · por confirmar.' }).waitFor();
+    await page.getByRole('heading',{name:'¡Hora reservada con éxito!',exact:true}).waitFor();
+    assert.equal(await page.locator('#booking-success').evaluate(el=>el===document.activeElement),true);
     assert.equal(bookingBody.appointment_start, '2099-01-06T10:00:00.000Z');
     assert.equal(bookingBody.slot_id, 'block');
     assert.equal(bookingBody.service_id, 'long');
