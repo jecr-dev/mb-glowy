@@ -1,4 +1,4 @@
-import { deliveries, setFailure } from './fixtures/nodemailer-mock.ts';
+import { deliveries, configurations, setFailure } from './fixtures/nodemailer-mock.ts';
 import { bookingMail } from '../supabase/functions/booking-mailer/templates.mjs';
 function assert(value: unknown, label = 'Assertion failed'): asserts value { if (!value) throw new Error(label); }
 let handler: (request: Request) => Promise<Response>;
@@ -21,7 +21,7 @@ Deno.test('plantillas: confirma con enlace, datos y ambos plazos; escapa HTML', 
 });
 Deno.test('worker: autentica, no usa el navegador y envía por SMTP con resultados en la cola', async () => {
   const secret = 'test-only-worker-secret-32-characters-long';
-  for (const [k, v] of Object.entries({ MB_MAIL_WORKER_SECRET: secret, SMTP_USER: 'm.valenzuela@mbglowy.com', SMTP_PASSWORD: 'test-only', SUPABASE_URL: 'https://test.supabase.co', SUPABASE_SERVICE_ROLE_KEY: 'test-service-key' })) Deno.env.set(k, v);
+  for (const [k, v] of Object.entries({ MB_MAIL_WORKER_SECRET: secret, SMTP_USER: 'm.barahona@mbglowy.com', SMTP_FROM: 'reserva@mbglowy.com', SMTP_REPLY_TO: 'reserva@mbglowy.com', SMTP_PASSWORD: 'test-only', SUPABASE_URL: 'https://test.supabase.co', SUPABASE_SERVICE_ROLE_KEY: 'test-service-key' })) Deno.env.set(k, v);
   let calls = 0;
   const finished: Array<Record<string, unknown>> = [];
   const originalFetch = globalThis.fetch;
@@ -38,7 +38,10 @@ Deno.test('worker: autentica, no usa el navegador y envía por SMTP con resultad
     const request = () => new Request('https://worker', { method: 'POST', headers: { 'x-worker-secret': secret } });
     assert((await handler(request())).status === 200);
     assert(deliveries.length === 1);
+    assert((configurations[0].auth as {user: string}).user === 'm.barahona@mbglowy.com');
     assert(deliveries[0].to === 'ana@example.com');
+    assert((deliveries[0].from as {address: string}).address === 'reserva@mbglowy.com');
+    assert(deliveries[0].replyTo === 'reserva@mbglowy.com');
     assert(deliveries[0].messageId === '<job1@mbglowy.com>');
     assert(finished[0].p_success === true);
     setFailure(true);

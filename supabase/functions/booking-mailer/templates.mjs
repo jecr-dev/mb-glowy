@@ -19,7 +19,7 @@ export function bookingMail(job, site) {
     : pending ? `Confirma al menos 3 horas antes, hasta ${deadline}. El plazo final de gracia termina a las ${cutoff}; si faltan menos de 2 horas y 30 minutos para la cita, se rechazará la confirmación y el tiempo se liberará.`
     : 'Tu reserva está confirmada. Para cambios, contacta con MB Glowy.';
   const action = admin ? `Administración: ${new URL('#admin', site)}` : pending ? `Confirmar asistencia: ${url}` : '';
-  const text = `${title}\n\n${details}\n\n${instructions}\n\n${action}\n\nMB Glowy · m.valenzuela@mbglowy.com`;
-  const html = `<div style="background:#F3E8DF;color:#4A352F;padding:28px;font-family:Arial,sans-serif;max-width:600px;margin:auto"><h1 style="font-family:Georgia,serif">MB Glowy</h1><h2>${escape(title)}</h2><p style="white-space:pre-line">${escape(details)}</p><p>${escape(instructions)}</p>${action ? `<p><a style="display:inline-block;background:#8F6E65;color:#fff;padding:14px 22px;border-radius:24px" href="${escape(admin ? new URL('#admin', site) : url)}">${admin ? 'Ver administración' : 'Confirmar mi asistencia'}</a></p>` : ''}<p>m.valenzuela@mbglowy.com</p></div>`;
+  const text = `${title}\n\n${details}\n\n${instructions}\n\n${action}\n\nMB Glowy · reserva@mbglowy.com`;
+  const html = `<div style="background:#F3E8DF;color:#4A352F;padding:28px;font-family:Arial,sans-serif;max-width:600px;margin:auto"><h1 style="font-family:Georgia,serif">MB Glowy</h1><h2>${escape(title)}</h2><p style="white-space:pre-line">${escape(details)}</p><p>${escape(instructions)}</p>${action ? `<p><a style="display:inline-block;background:#8F6E65;color:#fff;padding:14px 22px;border-radius:24px" href="${escape(admin ? new URL('#admin', site) : url)}">${admin ? 'Ver administración' : 'Confirmar mi asistencia'}</a></p>` : ''}<p>reserva@mbglowy.com</p></div>`;
   return { subject: title, text, html };
 }

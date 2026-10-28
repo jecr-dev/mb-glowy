@@ -18,14 +18,16 @@ En Supabase → Edge Functions → Secrets configurar:
 |---|---|
 | `SMTP_HOST` | El servidor SMTP indicado por Zoho para tu cuenta/región. |
 | `SMTP_PORT` | `465` o `587`. |
-| `SMTP_USER` | Dirección completa del remitente de Zoho (por ejemplo, tu cuenta de MB Glowy). |
+| `SMTP_USER` | `m.barahona@mbglowy.com`, cuenta principal que autentica en Zoho. |
+| `SMTP_FROM` | `reserva@mbglowy.com`, alias autorizado para enviar. |
+| `SMTP_REPLY_TO` | `reserva@mbglowy.com`; las respuestas llegan a la bandeja principal por el alias. |
 | `SMTP_PASSWORD` | Contraseña SMTP/de aplicación, solo en el panel seguro. |
 | `MB_MAIL_WORKER_SECRET` | Una cadena aleatoria privada de al menos 32 caracteres. Puede generarse localmente con `openssl rand -hex 32`. |
 | `PUBLIC_SITE_URL` | `https://mbglowy.com/app/` |
 
 `SUPABASE_URL` y `SUPABASE_SERVICE_ROLE_KEY` se inyectan en el servidor por Supabase: **no poner service_role ni los secretos SMTP en `app/config.js`**.
 
-El remitente es la cuenta `SMTP_USER`; Zoho debe autorizar esa cuenta para enviar. Los avisos administrativos van a **m.valenzuela@mbglowy.com**.
+El inicio de sesión SMTP usa la cuenta principal **m.barahona@mbglowy.com** y su contraseña SMTP/de aplicación. El remitente visible es **MB Glowy · Reservas <reserva@mbglowy.com>**. Zoho debe autorizar el envío desde ese alias. Los avisos administrativos van a **m.barahona@mbglowy.com**. El alias no tiene contraseña propia.
 
 ## 3. Actualizar la base y la página
 
@@ -58,7 +60,7 @@ La cola programa el recordatorio para cinco horas antes. El envío real puede re
 
 1. Integrar/publicar la rama del frontend en GitHub, esperar Pages y recargar la app. Crear un bloque de prueba futuro, asignar tratamiento y comuna.
 2. Reservar con un correo propio y dirección de prueba. Debe aparecer **Reservada · por confirmar**.
-3. Esperar el correo de la clienta y el aviso a m.valenzuela@mbglowy.com. Revisar spam. En el panel, abrir **Estado de envío de correos**: “Enviado” significa aceptado por SMTP, no leído ni entregado a bandeja de entrada.
+3. Esperar el correo de la clienta y el aviso a m.barahona@mbglowy.com. Revisar spam. En el panel, abrir **Estado de envío de correos**: “Enviado” significa aceptado por SMTP, no leído ni entregado a bandeja de entrada.
 4. Abrir el enlace: ver los datos **sin confirmar automáticamente**. Pulsar **Confirmar mi asistencia**; el panel debe mostrar **Confirmada** y encolarse el recibo.
 5. Editar la cita: el enlace anterior debe caducar y el nuevo correo pedir otra confirmación.
 6. Cancelar y eliminar la reserva; eliminar su bloque. No deben enviarse recordatorios de citas canceladas.
@@ -85,3 +87,31 @@ deno check supabase/functions/booking-mailer/index.ts
 ```
 
 Los tests PostgreSQL usan contenedores descartables, nunca producción. Los de navegador simulan la API. Las pruebas SMTP del worker simulan Zoho; los secretos, despliegue y aceptación real por Zoho deben verificarse por separado.
+
+## Aplicar el alias de reservas a una instalación existente
+
+1. Ejecutar solo `supabase/migrations/20261028_reservation_mail_alias.sql` (después de la migración de confirmaciones). Actualiza los avisos administrativos nuevos y pendientes; no modifica mensajes ya enviados ni las reservas.
+2. Configurar `SMTP_USER=m.barahona@mbglowy.com`, `SMTP_FROM=reserva@mbglowy.com` y `SMTP_REPLY_TO=reserva@mbglowy.com` en los secretos de la función. Mantener la contraseña de aplicación de la cuenta principal exclusivamente en `SMTP_PASSWORD`.
+3. Desplegar de nuevo `booking-mailer` e integrar/publicar el frontend. Probar con una reserva propia que Zoho acepta el alias y que una respuesta llega a la bandeja principal. Crear un alias no activa automáticamente SMTP ni los recordatorios.
+
+## Si aparece “Could not find the function … in the schema cache”
+
+La página nueva necesita las funciones de `20261028_confirmations_communes.sql`. La publicación de GitHub no ejecuta migraciones de Supabase. En una consulta nueva comprobar:
+
+```sql
+select
+  to_regprocedure('public.expire_pending_bookings()') as vencimientos,
+  to_regprocedure('public.book_slot(uuid,uuid,text,text,text,timestamptz,text,text)') as reservas;
+```
+
+Si alguno es `NULL`, revisar/aplicar la actualización completa `supabase/migrations/20261028_confirmations_communes.sql`. No ejecutar de nuevo `schema.sql`. Si la actualización informa un error, compartir ese error antes de intentar más cambios: la transacción revierte las modificaciones al fallar.
+
+Si ambas funciones existen pero la API aún no las encuentra, recargar únicamente la caché:
+
+```sql
+notify pgrst, 'reload schema';
+```
+
+Esperar unos segundos y recargar la página. Los correos requieren la configuración SMTP y el worker descritos arriba; la migración por sí sola solo encola los envíos.
+
+Prueba adicional del aviso de éxito y errores de versión: `node tests/booking-success.cjs` con servidor local en puerto 8003 (o `MB_BASE_URL`). El aviso debe aparecer después de guardar, incluso si falla la recarga, y nunca ante una reserva rechazada.

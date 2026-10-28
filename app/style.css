@@ -4,3 +4,5 @@
 .next-day{display:block;font-size:11px;color:inherit}
 
 .notice{padding:16px;background:var(--bg);border-left:3px solid var(--copper);border-radius:8px;font-size:14px}.badge{display:inline-block;padding:5px 12px;border-radius:20px;background:var(--bg);font-size:14px}.badge.pending{background:#F3D5D1}.badge.confirmed{background:#DFE8D9}.badge.cancelled,.badge.unconfirmed{background:#E6D9D2}button.danger{background:transparent;color:#922e28;border-color:#C98D83}.card[hidden]{display:none}summary{cursor:pointer;font-weight:500}
+
+.booking-success{border:2px solid #748469;background:#EDF1E8}.booking-success h2{color:#42563A}.booking-success:focus{outline:3px solid var(--copper);outline-offset:4px}

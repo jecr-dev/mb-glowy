@@ -18,6 +18,7 @@ class BookingWorkflow(unittest.TestCase):
         baseline.BookingDurations.setUpClass.__func__(cls)
         cls.sql('create role service_role; grant usage on schema public to service_role;')
         cls.sql((ROOT/'supabase/migrations/20261028_confirmations_communes.sql').read_text())
+        cls.sql((ROOT/'supabase/migrations/20261028_reservation_mail_alias.sql').read_text())
 
     def setUp(self):
         self.sql(f"delete from booking_email_jobs; delete from bookings where slot_id<>'{LEGACY}'; delete from slots where id<>'{LEGACY}'; insert into slots(id,starts_at,ends_at) values('{SLOT}','2099-01-05 10:00Z','2099-01-05 12:00Z'); insert into slot_services select '{SLOT}',id from services;update services set duration_minutes=60,active=true where id='{S}';update services set duration_minutes=90 where id='{baseline.LONG}';")
@@ -129,7 +130,7 @@ class BookingWorkflow(unittest.TestCase):
     def test_jobs_reminder_due_and_private_tokens(self):
         self.book()
         self.assertEqual(self.value("select count(*) from booking_email_jobs;"),'3')
-        self.assertEqual(self.value("select recipient from booking_email_jobs where kind='admin_booked';"),'m.valenzuela@mbglowy.com')
+        self.assertEqual(self.value("select recipient from booking_email_jobs where kind='admin_booked';"),'m.barahona@mbglowy.com')
         self.assertEqual(self.value("select (extract(epoch from(b.starts_at-j.due_at))/3600)::int from booking_email_jobs j join bookings b on b.id=j.booking_id where j.kind='reminder';"),'5')
         self.assertNotEqual(self.query('select * from claim_booking_emails();',check=False).returncode,0)
         self.assertNotEqual(self.query('select token from booking_confirmation_tokens;',check=False).returncode,0)
