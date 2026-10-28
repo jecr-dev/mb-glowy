@@ -1,3 +1,4 @@
+import {mountDashboard,resetDashboard,showDashboardEditor,updateDashboardMail} from './dashboard.js';
 import { bookingCalendar } from './calendar.js';
 const cfg=window.MB_CONFIG, view=document.querySelector('#view'), status=document.querySelector('#status');
 let token=sessionStorage.getItem('mb-token'), services=[], slots=[];
@@ -9,7 +10,11 @@ const states={pending:'Reservada · por confirmar',confirmed:'Confirmada',unconf
 const effectiveStatus=b=>b.status==='pending'&&new Date(b.starts_at).getTime()<Date.now()+150*60000?'unconfirmed':b.status;
 const active=b=>['pending','confirmed'].includes(effectiveStatus(b));
 const localInput=v=>{const d=new Date(v);return new Date(d-d.getTimezoneOffset()*60000).toISOString().slice(0,16);};
-function message(s,error=false){status.textContent=s;status.className=error?'error':'';}
+function message(s,error=false){
+ status.textContent=s;status.className=error?'error':'';
+ const dialog=document.querySelector('.dashboard-dialog[open]');
+ if(dialog){let local=dialog.querySelector('.dialog-status');if(!local){local=document.createElement('p');dialog.querySelector('.dialog-heading').after(local);}local.className='dialog-status'+(error?' error':'');local.setAttribute('role',error?'alert':'status');local.textContent=s;}
+}
 async function api(path,method='GET',body,auth=false){
  const r=await fetch(cfg.url+path,{method,headers:{apikey:cfg.anonKey,Authorization:`Bearer ${auth?token:cfg.anonKey}`,'Content-Type':'application/json',Prefer:'return=representation'},body:body===undefined?undefined:JSON.stringify(body)});
  const data=await r.json().catch(()=>null);
@@ -23,6 +28,7 @@ function formAction(id,fn){document.getElementById(id).onsubmit=async e=>{
 };}
 const fields=()=>`<label>Nombre completo<input name="customer_name" autocomplete="name" minlength="2" maxlength="120" required></label><label>Correo<input name="customer_email" type="email" autocomplete="email" maxlength="254" required></label><label>Teléfono<input name="customer_phone" type="tel" autocomplete="tel" minlength="7" maxlength="30" required></label><label>Dirección de atención a domicilio<input name="customer_address" autocomplete="street-address" minlength="5" maxlength="300" required></label>`;
 async function publicPage(){
+ resetDashboard();
  [services,slots]=await Promise.all([rest('services?active=eq.true&order=name'),rest('rpc/available_slots','POST',{})]);
  view.innerHTML=`<h2>Reserva tu atención a domicilio</h2><p>Hora de Chile continental. Selecciona tratamiento y comuna para ver dónde cabe tu cita completa. Cada bloque indica el margen libre entre atenciones, de 10 a 30 minutos.</p><div class="grid">${services.map(s=>`<article class="card"><h3>${esc(s.name)}</h3><p>${esc(s.description)}</p><small>${s.duration_minutes} min · ${Number(s.price).toLocaleString('es-CL',{style:'currency',currency:'CLP'})}</small></article>`).join('')||'<p>Aún no hay tratamientos disponibles.</p>'}</div><form id="booking"><label>Tratamiento<select name="service_id" required><option value="">Selecciona un tratamiento</option>${services.map(s=>`<option value="${s.id}">${esc(s.name)}</option>`).join('')}</select></label><label>Comuna de atención<select name="customer_commune" required><option value="">Selecciona una comuna</option></select></label><p><small>Si un bloque no tiene comuna, la primera reserva lo asigna a Coquimbo, La Serena u Ovalle. Los bloques con comuna asignada solo atienden en ella.</small></p><section class="booking-calendar" aria-label="Agenda de horas disponibles"><h3>Elige tu día y hora</h3><div id="booking-calendar"></div></section>${fields()}<label><input type="checkbox" required> Autorizo el uso de estos datos para gestionar mi atención y los correos de la reserva.</label><p class="notice">La reserva queda <strong>por confirmar</strong>. Recibirás un correo con un enlace para confirmar al menos 3 horas antes. Si faltan menos de 2 horas y 30 minutos, el enlace se rechazará y el horario se liberará. Las nuevas reservas requieren al menos 3 horas de anticipación.</p><button type="submit">Reservar · por confirmar</button><button type="button" id="reload-slots" class="secondary">Actualizar horarios</button></form>`;
  const serviceSelect=view.querySelector('[name=service_id]'),communeSelect=view.querySelector('[name=customer_commune]'),submit=view.querySelector('#booking button[type=submit]');
@@ -43,8 +49,9 @@ async function publicPage(){
   message(`Reserva recibida · por confirmar. Código: ${result}`);
  });
 }
-function login(){view.innerHTML='<h2>Administración</h2><form id="login"><label>Correo<input name="email" type="email" autocomplete="username" required></label><label>Contraseña<input name="password" type="password" autocomplete="current-password" required></label><button type="submit">Ingresar</button></form>';formAction('login',async fd=>{const data=await api('/auth/v1/token?grant_type=password','POST',Object.fromEntries(fd));token=data.access_token;sessionStorage.setItem('mb-token',token);await admin();});}
+function login(){resetDashboard();view.innerHTML='<h2>Administración</h2><form id="login"><label>Correo<input name="email" type="email" autocomplete="username" required></label><label>Contraseña<input name="password" type="password" autocomplete="current-password" required></label><button type="submit">Ingresar</button></form>';formAction('login',async fd=>{const data=await api('/auth/v1/token?grant_type=password','POST',Object.fromEntries(fd));token=data.access_token;sessionStorage.setItem('mb-token',token);await admin();});}
 async function confirmationPage(){
+ resetDashboard();
  const p_token=location.hash.slice('#confirm/'.length);
  if(!/^[a-f\d]{8}-[a-f\d]{4}-[a-f\d]{4}-[a-f\d]{4}-[a-f\d]{12}$/i.test(p_token))throw Error('Enlace de confirmación no válido.');
  const details=await rest('rpc/booking_confirmation_info','POST',{p_token});
@@ -88,6 +95,7 @@ async function admin(){
   try{
    const latest=await loadMailJobs();
    if(!button.isConnected)return;
+   updateDashboardMail(latest);
    document.getElementById('mail-summary').innerHTML=mailSummary(latest);
    document.getElementById('mail-history-rows').innerHTML=mailRows(latest);
    view.querySelectorAll('[data-mail-booking]').forEach(el=>{el.innerHTML=mailRows(latest.filter(j=>j.booking_id===el.dataset.mailBooking));});
@@ -95,25 +103,26 @@ async function admin(){
   }catch(error){message(error.message,true);}finally{if(button.isConnected)button.disabled=false;}
  };
  document.getElementById('logout').onclick=async()=>{await api('/auth/v1/logout','POST',{},true).catch(()=>{});token=null;sessionStorage.removeItem('mb-token');login();message('Sesión cerrada.');};document.getElementById('refresh').onclick=()=>run(admin);
- view.querySelectorAll('[data-edit-service]').forEach(button=>button.onclick=()=>{const s=ss.find(s=>s.id===button.dataset.editService),f=document.getElementById('service');for(const k of ['id','name','description','duration_minutes','price'])f.elements[k].value=s[k];f.elements.active.checked=s.active;document.getElementById('service-title').textContent='Editar servicio';f.scrollIntoView({behavior:'smooth'});});
+ view.querySelectorAll('[data-edit-service]').forEach(button=>button.onclick=()=>{const s=ss.find(s=>s.id===button.dataset.editService),f=document.getElementById('service');for(const k of ['id','name','description','duration_minutes','price'])f.elements[k].value=s[k];f.elements.active.checked=s.active;document.getElementById('service-title').textContent='Editar servicio';showDashboardEditor(f);});
  view.querySelectorAll('[data-delete-service]').forEach(button=>button.onclick=()=>{if(confirm('¿Eliminar servicio? Si tiene historial se ocultará.'))run(async()=>{await rest('rpc/remove_service','POST',{service:button.dataset.deleteService},true);await admin();message('Servicio eliminado u ocultado.');});});
  formAction('service',async fd=>{const id=fd.get('id');fd.delete('id');const data=Object.fromEntries(fd);data.active=fd.has('active');await rest('services'+(id?'?id=eq.'+id:''),id?'PATCH':'POST',data,true);await admin();message('Servicio guardado.');});
  formAction('slot',async fd=>{await rest('rpc/admin_save_slot','POST',{p_id:fd.get('id')||null,p_start:new Date(fd.get('starts_at')).toISOString(),p_end:new Date(fd.get('ends_at')).toISOString(),p_services:fd.getAll('services'),p_commune:fd.get('commune'),p_blocked:fd.has('blocked'),p_gap_minutes:Number(fd.get('gap_minutes'))},true);await admin();message('Horario guardado.');});
  document.getElementById('new-slot').onclick=()=>{document.getElementById('slot').reset();document.getElementById('slot').elements.id.value='';document.getElementById('slot-title').textContent='Abrir disponibilidad';};
- view.querySelectorAll('[data-edit-slot]').forEach(button=>button.onclick=()=>{const s=tt.find(s=>s.id===button.dataset.editSlot),f=document.getElementById('slot');f.elements.id.value=s.id;f.elements.starts_at.value=localInput(s.starts_at);f.elements.ends_at.value=localInput(s.ends_at);f.elements.commune.value=s.commune||'';f.elements.blocked.checked=s.blocked;f.elements.gap_minutes.value=s.gap_minutes||10;f.querySelectorAll('[name=services]').forEach(x=>x.checked=s.slot_services.some(v=>v.service_id===x.value));document.getElementById('slot-title').textContent='Editar disponibilidad';f.scrollIntoView({behavior:'smooth'});});
+ view.querySelectorAll('[data-edit-slot]').forEach(button=>button.onclick=()=>{const s=tt.find(s=>s.id===button.dataset.editSlot),f=document.getElementById('slot');f.elements.id.value=s.id;f.elements.starts_at.value=localInput(s.starts_at);f.elements.ends_at.value=localInput(s.ends_at);f.elements.commune.value=s.commune||'';f.elements.blocked.checked=s.blocked;f.elements.gap_minutes.value=s.gap_minutes||10;f.querySelectorAll('[name=services]').forEach(x=>x.checked=s.slot_services.some(v=>v.service_id===x.value));document.getElementById('slot-title').textContent='Editar disponibilidad';showDashboardEditor(f);});
  view.querySelectorAll('[data-block]').forEach(button=>button.onclick=()=>run(async()=>{const s=tt.find(s=>s.id===button.dataset.block);await rest('rpc/admin_set_slot_blocked','POST',{p_id:s.id,p_blocked:!s.blocked},true);await admin();}));
  view.querySelectorAll('[data-delete-slot]').forEach(button=>button.onclick=()=>{if(confirm('¿Eliminar bloque? Debes eliminar antes sus reservas.'))run(async()=>{await rest('rpc/admin_delete_slot','POST',{p_id:button.dataset.deleteSlot},true);await admin();message('Horario eliminado.');});});
  document.getElementById('booking-filter').onchange=e=>view.querySelectorAll('[data-booking]').forEach(card=>{card.hidden=e.target.value!=='all'&&(e.target.value==='past'?card.dataset.past!=='true':card.dataset.state!==e.target.value);});
  view.querySelectorAll('[data-cancel]').forEach(button=>button.onclick=()=>{if(confirm('¿Cancelar y liberar el tiempo reservado? Se solicitará un correo de aviso.'))run(async()=>{const b=bb.find(b=>b.id===button.dataset.cancel);await rest('rpc/admin_save_booking','POST',bookingPayload(b,'cancelled'),true);await admin();message('Reserva cancelada.');});});
  view.querySelectorAll('[data-delete-booking]').forEach(button=>button.onclick=()=>{if(confirm('¿Eliminar definitivamente esta reserva? Si es una cita futura vigente, se solicitará un correo de cancelación.'))run(async()=>{await rest('rpc/admin_delete_booking','POST',{p_id:button.dataset.deleteBooking},true);await admin();message('Reserva eliminada.');});});
  view.querySelectorAll('[data-edit-booking]').forEach(button=>button.onclick=()=>editBooking(bb.find(b=>b.id===button.dataset.editBooking),ss,tt));
+ mountDashboard(view,{bookings:bb,slots:tt,services:ss,jobs});
  message('Panel actualizado.');
 }
 function editBooking(b,ss,tt){
  const root=document.getElementById('booking-editor');root.innerHTML=`<form id="edit-booking"><h3>Editar reserva</h3><p>Cambiar fecha, tratamiento o datos solicita una confirmación nueva y avisa por correo. La duración se recalcula con el servicio elegido.</p><label>Bloque<select name="slot" required>${tt.map(s=>`<option value="${s.id}">${esc(date(s.starts_at))} · ${esc(s.commune||'Sin comuna')}</option>`).join('')}</select></label><label>Tratamiento<select name="service" required>${ss.map(s=>`<option value="${s.id}">${esc(s.name)} · ${s.duration_minutes} min</option>`).join('')}</select></label><label>Inicio (hora de este dispositivo)<input name="start" type="datetime-local" required></label><label>Comuna<input name="commune" required maxlength="100"></label>${fields()}<label>Estado<select name="state"><option value="pending">Por confirmar</option><option value="confirmed">Confirmada (solo dentro del plazo)</option><option value="cancelled">Cancelada</option></select></label><button type="submit">Guardar reserva</button><button type="button" id="close-editor" class="secondary">Cerrar</button></form>`;
  const f=document.getElementById('edit-booking');for(const name of ['customer_name','customer_email','customer_phone','customer_address'])f.elements[name].value=b[name]||'';f.elements.slot.value=b.slot_id;f.elements.service.value=b.service_id;f.elements.start.value=localInput(b.starts_at);f.elements.commune.value=b.commune||'';f.elements.state.value=['pending','confirmed','cancelled'].includes(b.status)?b.status:'pending';
- document.getElementById('close-editor').onclick=()=>root.replaceChildren();
- formAction('edit-booking',async fd=>{await rest('rpc/admin_save_booking','POST',{p_id:b.id,p_slot:fd.get('slot'),p_service:fd.get('service'),p_start:new Date(fd.get('start')).toISOString(),p_name:fd.get('customer_name'),p_email:fd.get('customer_email'),p_phone:fd.get('customer_phone'),p_address:fd.get('customer_address'),p_commune:fd.get('commune'),p_status:fd.get('state')},true);await admin();message('Reserva actualizada. Los cambios de datos requieren una confirmación nueva.');});root.scrollIntoView({behavior:'smooth'});
+ document.getElementById('close-editor').onclick=()=>{root.closest('dialog')?.close();root.replaceChildren();};
+ formAction('edit-booking',async fd=>{await rest('rpc/admin_save_booking','POST',{p_id:b.id,p_slot:fd.get('slot'),p_service:fd.get('service'),p_start:new Date(fd.get('start')).toISOString(),p_name:fd.get('customer_name'),p_email:fd.get('customer_email'),p_phone:fd.get('customer_phone'),p_address:fd.get('customer_address'),p_commune:fd.get('commune'),p_status:fd.get('state')},true);await admin();message('Reserva actualizada. Los cambios de datos requieren una confirmación nueva.');});showDashboardEditor(root);
 }
 function route(){message('');if(!cfg?.url||!cfg?.anonKey){view.innerHTML='<div class="card"><h2>Agenda en preparación</h2><p>Las reservas en línea aún no están habilitadas. Escríbenos a <a href="mailto:contacto@mbglowy.com">contacto@mbglowy.com</a>.</p></div>';return;}run(location.hash.startsWith('#confirm/')?confirmationPage:location.hash==='#admin'?admin:publicPage);}
 window.addEventListener('hashchange',route);route();
