@@ -126,6 +126,14 @@ Pruebas específicas: `python3 -m unittest discover -s tests -p test_booking_gap
 
 ## Ver el estado de los correos en administración
 
-El resumen **Estado de los correos** aparece al inicio del panel. Cada tarjeta de reserva incluye **Correos de esta reserva**, con el aviso para la clienta y para administración, estado y fecha. Los recordatorios futuros aparecen como **Programado**; **Enviado** significa aceptado por Zoho. **Actualizar correos** consulta el progreso sin reiniciar formularios ni perder ediciones pendientes. El detalle completo está disponible mediante **Ver detalle de envíos**. Esta mejora es solo de frontend y no requiere SQL.
+En el dashboard, la sección **Correos** reúne el resumen y el historial. Cada fila de reserva muestra un resumen del envío; **Ver detalle** abre los avisos para clienta y administración con su estado y fecha. Los recordatorios futuros aparecen como **Programado**; **Enviado** significa aceptado por Zoho. **Actualizar correos** consulta el progreso sin perder ediciones guardadas en los formularios abiertos anteriormente. Esta mejora es solo de frontend y no requiere SQL.
 
 Prueba local: `MB_BASE_URL=http://127.0.0.1:8005 node tests/admin-mail-status.cjs` (servidor local y Playwright/Chromium disponibles).
+
+## Dashboard administrativo
+
+La administración abre en **Reservas** con contadores de citas de hoy, pendientes, confirmadas y bloques abiertos. El menú separa Reservas, Horarios, Servicios y Correos. Las listas tienen paginación y el buscador permite combinar nombre/comuna/tratamiento, fecha y estado. Los formularios y el detalle de la reserva se abren en ventanas, con mensajes de error visibles dentro de ellas. El logo y la paleta de MB Glowy se conservan.
+
+En PC, tablet y móvil horizontal no hay que recorrer una página larga para cambiar de función. Las ventanas de edición y los historiales extensos pueden desplazarse internamente; la lista principal usa páginas. El diseño también se adapta a móvil vertical. No modifica las reglas de reserva, las tablas ni la configuración de correo.
+
+Pruebas de interfaz: `MB_BASE_URL=http://127.0.0.1:8007 node tests/dashboard.cjs`. Se verifican 1440×900, 1024×768, 844×390 y 390×844, navegación, filtros, paginación, detalles, edición, mensajes de error y retorno a la agenda pública.
