@@ -26,6 +26,8 @@ function dialogFor(root,node,title){
  return dialog;
 }
 export function updateDashboardMail(jobs){
+ const brief=document.getElementById('overview-mail-summary');
+ if(brief)brief.textContent=`${jobs.filter(j=>j.state==='pending'||j.state==='sending').length} en cola · ${jobs.filter(j=>j.state==='failed').length} con error · ${jobs.filter(j=>j.state==='sent').length} enviados`;
  document.querySelectorAll('[data-mail-summary-booking]').forEach(node=>{
   const rows=jobs.filter(j=>j.booking_id===node.dataset.mailSummaryBooking);
   const state=rows.some(j=>j.state==='failed')?'Error de correo':rows.some(j=>j.state==='sending')?'Correos enviando':rows.some(j=>j.state==='pending'&&new Date(j.due_at)<=new Date())?'Correos pendientes':rows.some(j=>j.state==='sent')?'Correos enviados':rows.length?'Correos programados':'Sin correos';
@@ -58,6 +60,7 @@ export function mountDashboard(root,{bookings,slots,services,jobs}){
  function button(text,fn){const b=document.createElement('button');b.type='button';b.textContent=text;b.onclick=fn;return b;}
  function activate(id){
   currentTab=id;panels.forEach((p,key)=>p.hidden=key!==id);
+  content.classList.toggle('overview-visible',id==='reservas');
   nav.querySelectorAll('button').forEach(b=>b.setAttribute('aria-current',b.dataset.tab===id?'page':'false'));
   requestAnimationFrame(()=>pagers.forEach(p=>p()));
  }
@@ -108,11 +111,42 @@ export function mountDashboard(root,{bookings,slots,services,jobs}){
   }
   pagers.push(render);return {filter(items){filtered=items;page=0;render();}};
  }
- const bookingPager=paginate(bookingList,cards,reserve.section);
+ const historic=cards.filter(card=>card.dataset.past==='true'||['cancelled','unconfirmed'].includes(card.dataset.state));
+ const upcoming=cards.filter(card=>!historic.includes(card));
+ const history=document.createElement('details');history.className='reservation-history';
+ const historySummary=document.createElement('summary');historySummary.textContent=`Historial de reservas (${historic.length})`;
+ const historyBody=document.createElement('div');historyBody.className='pane-body';
+ const historyList=document.createElement('div');historyList.append(...historic);historyBody.append(historyList);history.append(historySummary,historyBody);
+ reserve.section.append(history);
+ const bookingPager=paginate(bookingList,upcoming,reserve.section);
+ const historyPager=paginate(historyList,historic,history);
+ history.addEventListener('toggle',()=>requestAnimationFrame(()=>pagers.forEach(p=>p())));
+ const overview=document.createElement('aside');overview.className='dashboard-overview';overview.setAttribute('aria-label','Resumen de administración');
+ function overviewCard(title,lines,actions){
+  const card=document.createElement('section');card.className='overview-card';
+  const heading=document.createElement('h2');heading.textContent=title;card.append(heading);
+  for(const line of lines){const p=document.createElement('p');p.textContent=line;card.append(p);}
+  const bar=document.createElement('div');bar.className='overview-actions';
+  for(const [label,fn] of actions)bar.append(button(label,fn));card.append(bar);overview.append(card);
+ }
+ const futureSlots=slots.filter(s=>!s.blocked&&new Date(s.ends_at)>new Date()).sort((a,b)=>new Date(a.starts_at)-new Date(b.starts_at));
+ const nextSlot=futureSlots[0];
+ overviewCard('Disponibilidad',[`${futureSlots.length} bloques abiertos`,nextSlot?`${chile(nextSlot.starts_at,{weekday:'short',day:'numeric',month:'short',hour:'2-digit',minute:'2-digit'})} · ${nextSlot.commune||'Comuna por definir'}`:'Sin próximos horarios'],[['Ver horarios',()=>activate('horarios')],['Añadir',()=>slotPanel.header.querySelector('button').click()]]);
+ overviewCard('Servicios',[`${services.filter(s=>s.active).length} tratamientos disponibles`,services.filter(s=>s.active).slice(0,2).map(s=>`${s.name} · ${s.duration_minutes} min`).join(' / ')||'Añade tu primer tratamiento'],[['Ver servicios',()=>activate('servicios')],['Añadir',()=>servicesPanel.header.querySelector('button').click()]]);
+ const mailBrief=document.createElement('p');mailBrief.id='overview-mail-summary';
+ overviewCard('Correos',[],[['Ver envíos',()=>activate('correos')],['Actualizar',()=>mailOverview.querySelector('#refresh-mails').click()]]);
+ overview.lastElementChild.insertBefore(mailBrief,overview.lastElementChild.lastElementChild);
+ content.append(overview);
+ const mailDetails=document.createElement('details');mailDetails.className='mail-history-disclosure';
+ const mailSummary=document.createElement('summary');mailSummary.textContent='Historial de correos';
+ mailHistory.replaceWith(mailDetails);mailDetails.append(mailSummary,mailHistory);
+ if(oldShow)oldShow.onclick=()=>{mailDetails.open=!mailDetails.open;};
  function filterBookings(){
   const value=filter.querySelector('select').value,q=search.value.toLocaleLowerCase('es');
   const chosen=dateInput.value?new Date(dateInput.value+'T12:00:00Z'):null;
-  bookingPager.filter(cards.filter(card=>{const b=records.get(card.dataset.booking);return (value==='all'||(value==='past'?card.dataset.past==='true':card.dataset.state===value))&&(!q||[b.customer_name,b.customer_email,b.commune,b.services?.name].join(' ').toLocaleLowerCase('es').includes(q))&&(!chosen||dayKey(b.starts_at)===dayKey(chosen));}));
+  const matches=card=>{const b=records.get(card.dataset.booking);return (value==='all'||(value==='past'?card.dataset.past==='true':card.dataset.state===value))&&(!q||[b.customer_name,b.customer_email,b.commune,b.services?.name].join(' ').toLocaleLowerCase('es').includes(q))&&(!chosen||dayKey(b.starts_at)===dayKey(chosen));};
+  bookingPager.filter(upcoming.filter(matches));historyPager.filter(historic.filter(matches));
+  if(['past','cancelled','unconfirmed'].includes(value))history.open=true;
  }
  search.oninput=filterBookings;dateInput.onchange=filterBookings;filter.querySelector('select').onchange=filterBookings;
  paginate(serviceGrid,[...serviceGrid.children],servicesPanel.section,'cards');paginate(slotGrid,slotCards,slotPanel.section,'cards');
