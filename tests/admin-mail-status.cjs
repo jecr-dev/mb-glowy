@@ -18,6 +18,7 @@ const assert=require('node:assert/strict');
    return r.fulfill({json:data});
   });
   await page.goto((process.env.MB_BASE_URL||'http://127.0.0.1:8005')+'/app/#admin');
+  await page.locator('.reservation-history>summary').click();
   const emails=page.locator('[data-mail-booking="booking1"]');
   await page.getByRole('button',{name:'Ver detalle',exact:true}).click();
   await emails.getByText('Enviando',{exact:true}).waitFor();

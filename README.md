@@ -24,7 +24,7 @@ La instalación actual requiere además `supabase/migrations/20261028_confirmati
 
 ## Administración en dashboard
 
-El panel `/app/#admin` abre directamente en reservas y ofrece navegación por secciones, contadores, filtros y listas paginadas. Los formularios se abren en ventanas. Está adaptado a escritorio, tablet y móvil, con estados de correo en el detalle de cada reserva. Este cambio visual no requiere migraciones SQL ni redesplegar la función de correo.
+El panel `/app/#admin` abre directamente en reservas y ofrece navegación por secciones, contadores, filtros y listas paginadas. En PC y tablet horizontal, las reservas comparten pantalla con resúmenes y accesos a disponibilidad, servicios y correos. El historial de reservas pasadas, canceladas o no confirmadas, y el de correos, se despliegan a petición. Las listas se paginan para mantener la página dentro de la pantalla; los formularios se abren en ventanas. Está adaptado a escritorio, tablet y móvil, con estados de correo en el detalle de cada reserva. Este cambio visual no requiere migraciones SQL ni redesplegar la función de correo.
 
 ## Agenda visual para clientas
 

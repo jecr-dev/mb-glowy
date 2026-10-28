@@ -13,7 +13,7 @@ const assert=require('node:assert/strict');
    if(p.endsWith('/services')&&r.request().method()==='POST')return r.fulfill({status:400,json:{message:'Error de prueba: revisa el nombre.'}});
    if(p.endsWith('/services'))data=[{id:'service',name:'Limpieza facial',description:'Cuidado facial',duration_minutes:60,price:25000,active:true}];
    if(p.endsWith('/slots'))data=[{id:'slot',starts_at:'2099-01-06T12:00:00Z',ends_at:'2099-01-06T18:00:00Z',gap_minutes:20,commune:'Coquimbo',blocked:false,slot_services:[{service_id:'service'}]}];
-   if(p.endsWith('/bookings'))data=Array.from({length:24},(_,i)=>({id:'booking'+i,slot_id:'slot',service_id:'service',services:{name:'Limpieza facial'},customer_name:'Clienta '+String(i).padStart(2,'0'),customer_email:'ana@example.com',customer_phone:'123456789',customer_address:'Calle Prueba 123',commune:'Coquimbo',starts_at:'2099-01-06T12:00:00Z',ends_at:'2099-01-06T13:00:00Z',status:i%2?'confirmed':'pending'}));
+   if(p.endsWith('/bookings'))data=Array.from({length:30},(_,i)=>({id:'booking'+i,slot_id:'slot',service_id:'service',services:{name:'Limpieza facial'},customer_name:'Clienta '+String(i).padStart(2,'0'),customer_email:'ana@example.com',customer_phone:'123456789',customer_address:'Calle Prueba 123',commune:'Coquimbo',starts_at:'2099-01-06T12:00:00Z',ends_at:'2099-01-06T13:00:00Z',status:i>=24?'cancelled':i%2?'confirmed':'pending'}));
    return r.fulfill({json:data});
   });
   const base=process.env.MB_BASE_URL||'http://127.0.0.1:8007';
@@ -25,6 +25,20 @@ const assert=require('node:assert/strict');
    assert.ok(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth+1),`Body overflows horizontally at ${w}x${h}`);
    const pane=page.locator('[data-panel=reservas]');
    assert.ok(await pane.isVisible());
+   assert.equal(await page.locator('.reservation-history').getAttribute('open'),null);
+   assert.equal(await pane.locator('[data-booking=booking24]').isVisible(),false);
+   if(w>=650){
+    const overview=await page.locator('.dashboard-overview').boundingBox(),reservations=await pane.boundingBox();
+    assert.ok(overview.x>=reservations.x+reservations.width,'Resumen al lado de reservas');
+    assert.ok(overview.y+overview.height<=h,'Resumen dentro de pantalla');
+    assert.equal(await page.locator('.overview-card:visible').count(),3);
+    for(const card of await page.locator('.overview-card').all()){
+     assert.ok(await card.evaluate(el=>el.scrollHeight<=el.clientHeight+1),'Resumen sin contenido recortado');
+    }
+   }
+   await page.locator('.reservation-history>summary').click();
+   assert.ok(await pane.locator('[data-booking=booking24]').isVisible());
+   await page.locator('.reservation-history>summary').click();
    const first=pane.locator('[data-booking]:visible').first();
    assert.ok(await first.isVisible());
    const rect=await first.boundingBox();assert.ok(rect.y+rect.height<h,`First reservation outside viewport ${w}x${h}`);
@@ -32,7 +46,7 @@ const assert=require('node:assert/strict');
    assert.ok(!(await pane.locator('[data-booking="booking0"]').isVisible()));
    await page.getByRole('searchbox',{name:'Buscar reservas'}).fill('Clienta 23');
    assert.equal(await pane.locator('[data-booking]:visible').count(),1);
-   await page.getByRole('button',{name:'Ver detalle',exact:true}).click();
+   await pane.getByRole('button',{name:'Ver detalle',exact:true}).click();
    await page.getByRole('dialog').waitFor();
    await page.getByRole('dialog').getByRole('button',{name:'Editar reserva',exact:true}).click();
    assert.ok(await page.locator('#edit-booking').isVisible());
@@ -50,6 +64,9 @@ const assert=require('node:assert/strict');
    await page.getByRole('dialog').getByRole('alert').filter({hasText:'revisa el nombre'}).waitFor();
    await page.getByRole('button',{name:'Cerrar servicio',exact:true}).click();
    await page.locator('.dashboard-nav [data-tab=correos]').click();
+   assert.equal(await page.locator('#mail-history').isVisible(),false);
+   await page.locator('.mail-history-disclosure>summary').click();
+   assert.ok(await page.locator('#mail-history').isVisible());
    await page.getByRole('button',{name:'Actualizar correos',exact:true}).click();
    await page.locator('#mail-updated').filter({hasText:'Correos actualizados'}).waitFor();
    await page.locator('.dashboard-nav [data-tab=reservas]').click();
