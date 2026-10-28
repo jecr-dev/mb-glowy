@@ -66,7 +66,7 @@ export function bookingCalendar(root, onSelect) {
       visible = 12;
       if (!serviceChosen) {
         onSelect(null);
-        root.innerHTML = '<p class="calendar-empty">Primero elige un tratamiento para ver sus días y horas disponibles.</p>';
+        root.innerHTML = '<p class="calendar-empty">Primero elige un tratamiento y una comuna para ver sus días y horas disponibles.</p>';
         return;
       }
       const days = options.map(s => dayKey(s.starts_at));

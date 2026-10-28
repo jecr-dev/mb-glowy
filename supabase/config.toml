@@ -1,0 +1,5 @@
+project_id = "mb-glowy"
+
+# El worker valida su secreto propio, nunca se invoca desde el navegador.
+[functions.booking-mailer]
+verify_jwt = false
