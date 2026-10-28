@@ -17,6 +17,9 @@ Deno.serve(async request => {
   const host = Deno.env.get('SMTP_HOST') || 'smtp.zoho.com';
   const port = Number(Deno.env.get('SMTP_PORT') || '465');
   const user = Deno.env.get('SMTP_USER'), pass = Deno.env.get('SMTP_PASSWORD');
+  const sender = Deno.env.get('SMTP_FROM') || 'reserva@mbglowy.com';
+  const replyTo = Deno.env.get('SMTP_REPLY_TO') || sender;
+  if (![sender, replyTo].every(address => /^[^\s<>@]+@[^\s<>@]+\.[^\s<>@]+$/.test(address))) return json({ error: 'Invalid sender configuration' }, 503);
   const site = Deno.env.get('PUBLIC_SITE_URL') || 'https://mbglowy.com/app/';
   if (!url || !key || !user || !pass || ![465, 587].includes(port) || !/^smtp(?:pro)?\.zoho\.(com|eu|in|com\.au|jp|ca|sa|com\.cn)$/.test(host)) return json({ error: 'Zoho SMTP configuration missing or invalid' }, 503);
   async function rpc(name: string, body: unknown) {
@@ -31,7 +34,7 @@ Deno.serve(async request => {
     for (const job of jobs) {
       try {
         const mail = bookingMail(job, site);
-        const result = await transport.sendMail({ from: { name: 'MB Glowy', address: user }, to: job.recipient, messageId: `<${job.id}@mbglowy.com>`, ...mail });
+        const result = await transport.sendMail({ from: { name: 'MB Glowy · Reservas', address: sender }, replyTo, to: job.recipient, messageId: `<${job.id}@mbglowy.com>`, ...mail });
         if (!result.accepted?.length) throw new Error('SMTP_RECIPIENT_REJECTED');
         await rpc('finish_booking_email', { p_id: job.id, p_success: true });
         sent++;

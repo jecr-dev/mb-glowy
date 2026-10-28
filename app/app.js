@@ -35,7 +35,7 @@ async function publicPage(){
   if(!fd.get('slot_choice'))throw Error('Selecciona un día y una hora.');
   const [slot_id,appointment_start]=fd.get('slot_choice').split('|');fd.delete('slot_choice');
   const result=await rest('rpc/book_slot','POST',{...Object.fromEntries(fd),slot_id,appointment_start});
-  await publicPage();message(`Reserva recibida · por confirmar. Código: ${result}\nSe ha solicitado el envío de un correo con los datos y el enlace para confirmar. Si no llega, revisa spam o contacta a m.valenzuela@mbglowy.com.`);
+  await publicPage();message(`Reserva recibida · por confirmar. Código: ${result}\nSe ha solicitado el envío de un correo con los datos y el enlace para confirmar. Si no llega, revisa spam o contacta a reserva@mbglowy.com.`);
  });
 }
 function login(){view.innerHTML='<h2>Administración</h2><form id="login"><label>Correo<input name="email" type="email" autocomplete="username" required></label><label>Contraseña<input name="password" type="password" autocomplete="current-password" required></label><button type="submit">Ingresar</button></form>';formAction('login',async fd=>{const data=await api('/auth/v1/token?grant_type=password','POST',Object.fromEntries(fd));token=data.access_token;sessionStorage.setItem('mb-token',token);await admin();});}
@@ -44,7 +44,7 @@ async function confirmationPage(){
  if(!/^[a-f\d]{8}-[a-f\d]{4}-[a-f\d]{4}-[a-f\d]{4}-[a-f\d]{12}$/i.test(p_token))throw Error('Enlace de confirmación no válido.');
  const details=await rest('rpc/booking_confirmation_info','POST',{p_token});
  if(!details){view.innerHTML='<h2>Enlace no disponible</h2><p>La reserva fue eliminada o modificada. Utiliza el enlace del correo más reciente.</p>';return;}
- view.innerHTML=`<h2>Confirmar mi atención</h2><article class="card"><h3>${esc(details.service)}</h3><p>${esc(date(details.starts_at))}<br>Hasta ${esc(date(details.ends_at))}<br>Comuna: ${esc(details.commune)}</p><p class="badge">${esc(states[details.status])}</p>${details.can_confirm?'<button id="confirm-visit">Confirmar mi asistencia</button><p>Confirma al menos 3 horas antes. El plazo final vence cuando faltan menos de 2 horas y 30 minutos.</p>':'<p>Esta reserva ya no necesita o no admite confirmación. Para consultas: m.valenzuela@mbglowy.com.</p>'}</article>`;
+ view.innerHTML=`<h2>Confirmar mi atención</h2><article class="card"><h3>${esc(details.service)}</h3><p>${esc(date(details.starts_at))}<br>Hasta ${esc(date(details.ends_at))}<br>Comuna: ${esc(details.commune)}</p><p class="badge">${esc(states[details.status])}</p>${details.can_confirm?'<button id="confirm-visit">Confirmar mi asistencia</button><p>Confirma al menos 3 horas antes. El plazo final vence cuando faltan menos de 2 horas y 30 minutos.</p>':'<p>Esta reserva ya no necesita o no admite confirmación. Para consultas: reserva@mbglowy.com.</p>'}</article>`;
  const b=document.getElementById('confirm-visit');if(b)b.onclick=()=>run(async()=>{b.disabled=true;try{const result=await rest('rpc/confirm_booking','POST',{p_token});await confirmationPage();message(result.message,!result.ok);}finally{if(b.isConnected)b.disabled=false;}});
 }
 function bookingPayload(b,status=b.status){return {p_id:b.id,p_slot:b.slot_id,p_service:b.service_id,p_start:b.starts_at,p_name:b.customer_name,p_email:b.customer_email,p_phone:b.customer_phone,p_commune:b.commune,p_address:b.customer_address,p_status:status};}
