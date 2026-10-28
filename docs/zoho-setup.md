@@ -120,7 +120,7 @@ Prueba adicional del aviso de éxito y errores de versión: `node tests/booking-
 
 Ejecutar `supabase/migrations/20261028_booking_gap.sql` en una consulta nueva después de confirmaciones/comunas. No repetir el esquema inicial. Es idempotente y conserva las reservas existentes. En cada bloque la administradora puede elegir 10, 15, 20, 25 o 30 minutos libres entre citas (10 por defecto). Entre dos bloques se respeta el mayor margen. Al editar la preferencia no se mueven citas ya guardadas; las nuevas o editadas deben cumplirla.
 
-Una atención que termina a las 12:00, con margen de 20 minutos, permite otra desde las 12:20. Las opciones de inicio siguen en pasos de cinco minutos: el margen es tiempo libre real, no el paso de la cuadrícula. La duración del tratamiento no cambia y siempre debe caber antes del cierre; no se exige una pausa adicional dentro del bloque después de la última cita. Cancelar o vencer una reserva libera su ocupación. No es necesario redesplegar el worker de correo.
+Una atención que termina a las 12:00, con margen de 20 minutos, permite otra desde las 12:20. La actualización de opciones consecutivas descrita más abajo muestra cada atención seguida de su pausa, en lugar de un inicio cada cinco minutos. La duración del tratamiento no cambia y siempre debe caber antes del cierre; no se exige una pausa adicional dentro del bloque después de la última cita. Cancelar o vencer una reserva libera su ocupación. No es necesario redesplegar el worker de correo.
 
 Pruebas específicas: `python3 -m unittest discover -s tests -p test_booking_gap.py -v`.
 
@@ -137,3 +137,13 @@ La administración abre en **Reservas** con contadores de citas de hoy, pendient
 En PC, tablet y móvil horizontal no hay que recorrer una página larga para cambiar de función. Las ventanas de edición y los historiales extensos pueden desplazarse internamente; la lista principal usa páginas. El diseño también se adapta a móvil vertical. No modifica las reglas de reserva, las tablas ni la configuración de correo.
 
 Pruebas de interfaz: `MB_BASE_URL=http://127.0.0.1:8007 node tests/dashboard.cjs`. Se verifican 1440×900, 1024×768, 844×390 y 390×844, navegación, filtros, paginación, detalles, edición, mensajes de error y retorno a la agenda pública.
+
+## Opciones consecutivas por duración y pausa
+
+Después de la migración del margen configurable, ejecutar `supabase/migrations/20261028_sequential_booking_options.sql` en una consulta nueva. Es idempotente y no cambia reservas existentes, credenciales ni recordatorios.
+
+Las opciones se generan en cada tramo realmente libre, avanzando por **duración del tratamiento + margen del bloque**. Por ejemplo, un bloque 13:00–18:00, un tratamiento de 60 minutos y margen de 10 muestran 13:00–14:00, 14:10–15:10, 15:20–16:20 y 16:30–17:30. Se descarta cualquier opción cuyo tratamiento no cabe completo. Las reservas ya guardadas dividen el bloque en tramos libres; el siguiente tramo empieza después de la cita y su margen, incluso si la cita anterior tenía otra duración.
+
+La edición manual administrativa admite minutos enteros y conserva la validación del margen y los límites. La lista pública se construye en secuencia. No se debe volver a ejecutar la migración anterior del margen después de esta: restauraría el generador antiguo. No hay que redesplegar el worker de correo.
+
+Pruebas: `python3 -m unittest discover -s tests -p test_sequential_options.py -v`.
