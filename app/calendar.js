@@ -44,7 +44,7 @@ export function bookingCalendar(root, onSelect) {
     });
     root.querySelectorAll('[data-option]').forEach(input => input.onchange = () => {
       const selected = times[Number(input.dataset.option)];
-      root.querySelector('#selected-time').textContent = `${fullDay.format(new Date(selected.starts_at))} · ${time.format(new Date(selected.starts_at))} a ${time.format(new Date(selected.ends_at))}${dayKey(selected.starts_at) !== dayKey(selected.ends_at) ? ' (día siguiente)' : ''} · ${Math.round((new Date(selected.ends_at) - new Date(selected.starts_at)) / 60000)} minutos`;
+      root.querySelector('#selected-time').textContent = `${fullDay.format(new Date(selected.starts_at))} · ${time.format(new Date(selected.starts_at))} a ${time.format(new Date(selected.ends_at))}${dayKey(selected.starts_at) !== dayKey(selected.ends_at) ? ' (día siguiente)' : ''} · ${Math.round((new Date(selected.ends_at) - new Date(selected.starts_at)) / 60000)} minutos${selected.gap_minutes ? ` · margen entre citas: ${selected.gap_minutes} minutos` : ''}`;
       onSelect(selected);
     });
     const more = root.querySelector('#more-times');
