@@ -1,0 +1,1 @@
+{"imports":{"npm:nodemailer@10.2.1":"./fixtures/nodemailer-mock.ts"}}

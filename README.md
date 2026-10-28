@@ -3,6 +3,10 @@
 Sitio estático sin compilación. Servir el repositorio con `python3 -m http.server 8000`.
 Página pública `/`; reservas y PWA `/app/`; administración `/app/#admin`.
 
+## Nueva versión: confirmación, comunas y Zoho
+
+La instalación actual requiere además `supabase/migrations/20261028_confirmations_communes.sql`, después de la actualización por duración. La configuración de SMTP, secretos, Edge Function, cron, reglas y pruebas reales está en [docs/zoho-setup.md](docs/zoho-setup.md). El correo no queda activo por publicar los archivos: requiere SMTP habilitado en la cuenta Zoho, sin contratar un servicio de pago.
+
 ## Activación con Supabase
 
 1. Crear un proyecto en https://supabase.com/dashboard con una región apropiada para Chile. Mantener la contraseña de la base de datos privada.
@@ -30,9 +34,9 @@ Abrir `https://TU-DOMINIO/app/` en Safari → Compartir → Añadir a pantalla d
 
 - Añadir, modificar y eliminar servicios. Un servicio con historial de reservas se oculta en lugar de eliminar los datos históricos; se puede volver a activar editándolo.
 - Horarios sin solapamientos para una sola profesional/agenda. La duración completa del tratamiento debe caber en el tiempo libre del bloque, sin cruzar otras citas ni el cierre. Se admiten duraciones de 5 a 480 minutos, incluidas las citas de 5 horas (300 minutos). Las reservas guardan su inicio y fin: editar después la duración del servicio no mueve citas anteriores.
-- Acceso administrativo con Supabase Auth; sesión limitada a la pestaña. Cuando caduca, cerrar sesión e ingresar de nuevo. No se implementa recuperación de contraseña en esta interfaz: se gestiona desde Supabase.
+- Acceso administrativo con Supabase Auth; sesión limitada a la pestaña. Cuando caduca, se solicita iniciar sesión de nuevo. No se implementa recuperación de contraseña en esta interfaz: se gestiona desde Supabase.
 - Los datos personales se consultan solo con rol administrativo. No se guardan en el caché del service worker. El shell puede abrir sin conexión, pero para consultar o reservar se requiere internet.
-- Confirmación en pantalla con código; no hay correos, pagos, recordatorios, reagendamiento automático ni notificaciones push.
+- Confirmación en pantalla con código; la nueva versión encola correos y recordatorios de confirmación mediante Zoho SMTP cuando se configura el worker. No hay pagos ni notificaciones push.
 - Una restricción de exclusión de intervalos en PostgreSQL y el bloqueo de fila impiden reservas que se solapen, incluso entre peticiones simultáneas. El final de una cita puede coincidir con el inicio de la siguiente. Las funciones públicas no devuelven nombres ni datos de contacto.
 - Antes de un lanzamiento abierto, definir política de privacidad y retención, canal para cancelaciones y protección antiabuso de reservas (por ejemplo, CAPTCHA validado en una función de servidor y límites por cliente). La versión actual no incluye protección contra reservas automatizadas.
 
