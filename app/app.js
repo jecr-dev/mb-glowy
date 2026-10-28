@@ -13,7 +13,7 @@ function message(s,error=false){status.textContent=s;status.className=error?'err
 async function api(path,method='GET',body,auth=false){
  const r=await fetch(cfg.url+path,{method,headers:{apikey:cfg.anonKey,Authorization:`Bearer ${auth?token:cfg.anonKey}`,'Content-Type':'application/json',Prefer:'return=representation'},body:body===undefined?undefined:JSON.stringify(body)});
  const data=await r.json().catch(()=>null);
- if(!r.ok){if(auth&&r.status===401){sessionStorage.removeItem('mb-token');token=null;login();}throw Error(data?.message||data?.msg||data?.error_description||'No se pudo completar la operación.');}return data;
+ if(!r.ok){if(data?.code==='PGRST202')throw Error(auth?'Falta actualizar las funciones de Supabase para esta versión. Revisa la migración de confirmaciones y comunas.':'Las reservas están temporalmente en mantenimiento. Contacta a reserva@mbglowy.com.');if(auth&&r.status===401){sessionStorage.removeItem('mb-token');token=null;login();}throw Error(data?.message||data?.msg||data?.error_description||'No se pudo completar la operación.');}return data;
 }
 const rest=(path,method,body,auth=false)=>api('/rest/v1/'+path,method,body,auth);
 async function run(fn){try{await fn();}catch(e){message(e.message,true);}}
@@ -35,7 +35,12 @@ async function publicPage(){
   if(!fd.get('slot_choice'))throw Error('Selecciona un día y una hora.');
   const [slot_id,appointment_start]=fd.get('slot_choice').split('|');fd.delete('slot_choice');
   const result=await rest('rpc/book_slot','POST',{...Object.fromEntries(fd),slot_id,appointment_start});
-  await publicPage();message(`Reserva recibida · por confirmar. Código: ${result}\nSe ha solicitado el envío de un correo con los datos y el enlace para confirmar. Si no llega, revisa spam o contacta a reserva@mbglowy.com.`);
+  // La reserva ya se guardó: un fallo al refrescar no debe invitar a repetirla.
+  try{await publicPage();}catch{view.innerHTML='<p>Tu reserva quedó guardada. Puedes volver a la agenda más tarde.</p>';}
+  const notice=document.createElement('section');notice.className='card booking-success';notice.id='booking-success';notice.tabIndex=-1;notice.setAttribute('aria-labelledby','booking-success-title');
+  notice.innerHTML=`<h2 id="booking-success-title">¡Hora reservada con éxito!</h2><p><strong>Estado: por confirmar.</strong> Guarda tu código: <strong>${esc(result)}</strong>.</p><p>Se ha solicitado un correo con los datos y el enlace de confirmación. Revisa también spam. Si no llega, contacta a <a href="mailto:reserva@mbglowy.com">reserva@mbglowy.com</a>.</p><p>Confirma al menos 3 horas antes. Cuando faltan menos de 2 horas y 30 minutos, el enlace deja de admitir confirmación.</p>`;
+  view.prepend(notice);notice.focus();notice.scrollIntoView({behavior:'smooth',block:'center'});
+  message(`Reserva recibida · por confirmar. Código: ${result}`);
  });
 }
 function login(){view.innerHTML='<h2>Administración</h2><form id="login"><label>Correo<input name="email" type="email" autocomplete="username" required></label><label>Contraseña<input name="password" type="password" autocomplete="current-password" required></label><button type="submit">Ingresar</button></form>';formAction('login',async fd=>{const data=await api('/auth/v1/token?grant_type=password','POST',Object.fromEntries(fd));token=data.access_token;sessionStorage.setItem('mb-token',token);await admin();});}
