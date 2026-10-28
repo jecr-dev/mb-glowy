@@ -1,5 +1,5 @@
-const CACHE='mb-glowy-v12';
-const FILES=['./','./index.html','./style.css','./app.js','./calendar.js','./dashboard.js','/icons/marca-1024.png','/icons/favicon.ico','/icons/favicon-16.png','/icons/favicon-32.png','/icons/favicon-48.png','/icons/apple-touch-icon.png','./apple-touch-icon.png','./icon-maskable-192.png','./icon-maskable-512.png','./icon-192.png','./icon-512.png','./manifest.webmanifest'];
+const CACHE='mb-glowy-v13';
+const FILES=['./','./index.html','./style.css','./app.js','./calendar.js','./consent.js','/legal/forms.css','./dashboard.js','/icons/marca-1024.png','/icons/favicon.ico','/icons/favicon-16.png','/icons/favicon-32.png','/icons/favicon-48.png','/icons/apple-touch-icon.png','./apple-touch-icon.png','./icon-maskable-192.png','./icon-maskable-512.png','./icon-192.png','./icon-512.png','./manifest.webmanifest'];
 self.addEventListener('install',event=>event.waitUntil(caches.open(CACHE).then(cache=>cache.addAll(FILES))));
 self.addEventListener('activate',event=>event.waitUntil(caches.keys().then(keys=>Promise.all(keys.filter(k=>k.startsWith('mb-glowy-')&&k!==CACHE).map(k=>caches.delete(k))))));
 self.addEventListener('fetch',event=>{

@@ -65,3 +65,7 @@ python3 -m unittest discover -s tests -v
 Requieren Docker y descargan la imagen oficial `postgres:17` si no existe. Verifican límites, duración de cinco horas, tiempo restante, cancelación, concurrencia, migración de reservas anteriores y permisos. La publicación y ejecución en Supabase se verifican por separado.
 
 Prueba de interfaz con API simulada: con un servidor local en puerto 8000 y Playwright/Chromium disponibles, ejecutar `node tests/booking-ui.cjs`. `MB_BASE_URL` y `CHROMIUM_PATH` permiten cambiar servidor y navegador.
+
+## Políticas y aceptaciones · preparación pendiente
+
+La rama de privacidad prepara términos, privacidad, cookies y reembolsos para Chile; dos casillas por formulario, registro de fecha del servidor/versiones/textos y exportación administrativa. **No publicar ni ejecutar la migración legal antes de completar la identidad del responsable**: los documentos se entregan como borrador y `legal_settings.ready=false` impide nuevas reservas con la nueva API. Ver [revisión, límites y puesta en marcha](docs/legal-cumplimiento-chile.md). Las fuentes oficiales no pudieron contrastarse en línea por bloqueo del entorno; esto no certifica cumplimiento legal. No se atribuyen consentimientos a reservas antiguas.

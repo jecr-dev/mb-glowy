@@ -19,9 +19,6 @@
 <meta property="og:image:alt" content="Marca de MB Glowy en tonos cobre y rosado">
 <meta name="twitter:card" content="summary_large_image">
 <meta name="twitter:image" content="https://mbglowy.com/icons/og-image.png">
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@400;500;600&family=Jost:wght@300;400;500&display=swap" rel="stylesheet">
 <style>
 :root{
   --truffle:#8F6E65; --mushroom:#D9B9A0; --quartz:#C98D83; --blush:#F3D5D1; --linen:#F3E8DF;
@@ -86,6 +83,7 @@ textarea{min-height:120px;resize:vertical}
 footer{background:var(--truffle);color:#F3E8DF;padding:2rem 0;font-size:.9rem}
 footer .wrap{display:flex;justify-content:space-between;flex-wrap:wrap;gap:1rem}
 </style>
+<link rel="stylesheet" href="/legal/forms.css">
 </head>
 <body>
 
@@ -110,7 +108,7 @@ footer .wrap{display:flex;justify-content:space-between;flex-wrap:wrap;gap:1rem}
     <div class="wrap hero">
       <div>
         <h1>Tu piel, tu ritual, tu brillo.</h1>
-        <p>Tratamientos de estética pensados para que te sientas bien, con calma y sin apuro. [Texto de bienvenida: reemplazar]</p>
+        <p>Tratamientos de estética pensados para que te sientas bien, con calma y sin apuro.</p>
         <div class="actions">
           <a class="btn" href="#agenda">Reservar hora</a>
           <a class="btn ghost" href="#servicios">Ver servicios</a>
@@ -178,10 +176,10 @@ footer .wrap{display:flex;justify-content:space-between;flex-wrap:wrap;gap:1rem}
         <h2>Contacto</h2>
         <p>Escríbenos y te respondemos a la brevedad.</p>
         <p><a href="mailto:contacto@mbglowy.com">contacto@mbglowy.com</a></p>
-        <p>Dirección: [por definir]<br>Horario: [por definir]<br>Instagram / WhatsApp: [por definir]</p>
+        <p>Atención a domicilio en Chile.<br>Consulta las comunas y horarios disponibles en la agenda.</p>
       </div>
       <!-- Por ahora abre el correo del cliente. Luego se puede conectar a un servicio de formularios. -->
-      <form id="contact-form" action="mailto:contacto@mbglowy.com" method="post" enctype="text/plain">
+      <form id="contact-form">
         <label>Nombre<input name="nombre" required autocomplete="name"></label>
         <label>Correo<input type="email" name="correo" required autocomplete="email"></label>
         <label>Servicio de interés
@@ -190,7 +188,7 @@ footer .wrap{display:flex;justify-content:space-between;flex-wrap:wrap;gap:1rem}
           </select>
         </label>
         <label>Mensaje<textarea name="mensaje"></textarea></label>
-        <button class="btn" type="submit">Enviar mensaje</button>
+        <button class="btn" type="submit" disabled>Registrar aceptación y preparar correo</button><p id="contact-status" role="status">El envío requiere JavaScript para registrar las aceptaciones. Después podrás abrir tu correo para enviar el mensaje.</p>
       </form>
     </div>
   </section>
@@ -206,5 +204,6 @@ footer .wrap{display:flex;justify-content:space-between;flex-wrap:wrap;gap:1rem}
 <style>.sr{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0)}</style>
 <script src="/app/config.js"></script>
 <script type="module" src="/app/catalog.js"></script>
+<script type="module" src="/app/contact.js"></script>
 </body>
 </html>

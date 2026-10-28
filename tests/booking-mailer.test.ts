@@ -50,3 +50,12 @@ Deno.test('worker: autentica, no usa el navegador y envía por SMTP con resultad
     assert(!JSON.stringify(finished).includes('private SMTP detail'));
   } finally { globalThis.fetch = originalFetch; setFailure(false); }
 });
+
+Deno.test('correo inicial: copia íntegra de los textos aceptados y enlaces absolutos', () => {
+ const content=Deno.readTextFileSync(new URL('../legal/2026-10-28/terminos.html',import.meta.url));
+ const result=bookingMail({kind:'booked',payload:{...payload,legal_version:'2026-10-28.v1',legal_receipt:'acceptance-id',legal_documents:[{content,url:'/legal/2026-10-28/terminos.html'}]}},'https://mbglowy.com/app/');
+ assert(result.text.includes('Términos y condiciones'));
+ assert(result.text.includes('acceptance-id'));
+ assert(result.html.includes('https://mbglowy.com/legal/2026-10-28/reembolsos.html'));
+ assert(!result.html.includes('<main>'));
+});

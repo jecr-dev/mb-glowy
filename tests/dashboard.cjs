@@ -9,6 +9,7 @@ const assert=require('node:assert/strict');
   await page.route('**/app/config.js',r=>r.fulfill({contentType:'application/javascript',body:'window.MB_CONFIG={url:"https://test.supabase.co",anonKey:"public-test"};'}));
   await page.route('https://test.supabase.co/**',r=>{
    const p=new URL(r.request().url()).pathname;let data=[];
+   if(p.endsWith('/legal_bundle'))return r.fulfill({json:{ready:true,version:'2026-10-28.v1'}});
    if(p.endsWith('/admins'))data=[{user_id:'admin'}];
    if(p.endsWith('/services')&&r.request().method()==='POST')return r.fulfill({status:400,json:{message:'Error de prueba: revisa el nombre.'}});
    if(p.endsWith('/services'))data=[{id:'service',name:'Limpieza facial',description:'Cuidado facial',duration_minutes:60,price:25000,active:true}];
@@ -60,6 +61,7 @@ const assert=require('node:assert/strict');
    await page.getByRole('button',{name:'Añadir servicio',exact:true}).click();
    assert.ok(await page.locator('#service').isVisible());
    await page.locator('#service [name=name]').fill('Servicio de prueba');
+   await page.locator('#service [name=terms_accepted]').check();await page.locator('#service [name=privacy_accepted]').check();
    await page.getByRole('button',{name:'Guardar servicio',exact:true}).click();
    await page.getByRole('dialog').getByRole('alert').filter({hasText:'revisa el nombre'}).waitFor();
    await page.getByRole('button',{name:'Cerrar servicio',exact:true}).click();
