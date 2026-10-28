@@ -47,7 +47,7 @@ export function mountDashboard(root,{bookings,slots,services,jobs}){
  shell.innerHTML=`<div class="dashboard-heading"><div><p class="eyebrow">MB GLOWY · ADMINISTRACIÓN</p><h1>Tu agenda, en orden</h1></div></div><nav class="dashboard-nav" aria-label="Secciones de administración"></nav><div class="dashboard-metrics"></div><div class="dashboard-content"></div>`;
  shell.querySelector('.dashboard-heading').append(toolbar);
  const nav=shell.querySelector('.dashboard-nav'),metrics=shell.querySelector('.dashboard-metrics'),content=shell.querySelector('.dashboard-content');
- const mark=document.createElement('img');mark.className='dashboard-mark';mark.src='logo.jpg';mark.alt='MB Glowy';nav.append(mark);
+ const mark=document.createElement('img');mark.className='dashboard-mark';mark.src='/icons/marca-1024.png';mark.alt='MB Glowy';nav.append(mark);
  const today=dayKey(new Date());
  const counts=[['Citas de hoy',bookings.filter(b=>['pending','confirmed'].includes(b.status)&&dayKey(b.starts_at)===today).length],['Por confirmar',bookings.filter(b=>b.status==='pending'&&new Date(b.starts_at)>=new Date(Date.now()+150*60000)).length],['Confirmadas',bookings.filter(b=>b.status==='confirmed'&&new Date(b.ends_at)>new Date()).length],['Bloques abiertos',slots.filter(s=>!s.blocked&&new Date(s.ends_at)>new Date()).length]];
  metrics.innerHTML=counts.map(([label,count])=>`<div class="metric"><span>${label}</span><strong>${count}</strong></div>`).join('');
