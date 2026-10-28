@@ -30,7 +30,7 @@ const assert = require('node:assert/strict');
       }
       if (path.endsWith('/token')) data = { access_token: 'admin-token' };
       if (path.endsWith('/admins')) data = [{ user_id: 'admin' }];
-      if (path.endsWith('/slots')) data = slotDeleted ? [] : [{ id: 'block', starts_at: '2099-01-06T10:00:00Z', ends_at: '2099-01-06T16:00:00Z', blocked: false, commune: 'Coquimbo', slot_services: [{service_id: 'long'}, {service_id:'short'}] }];
+      if (path.endsWith('/slots')) data = slotDeleted ? [] : [{ id: 'block', starts_at: '2099-01-06T10:00:00Z', ends_at: '2099-01-06T16:00:00Z', blocked: false, commune: 'Coquimbo', gap_minutes:20, slot_services: [{service_id: 'long'}, {service_id:'short'}] }];
       if (path.endsWith('/bookings')) data = bookingDeleted ? [] : [{ id: 'booking-confirmed', slot_id: 'block', customer_name: 'Ana Prueba', customer_email: 'ana@example.com', customer_phone: '123456789', starts_at: '2099-01-06T10:00:00Z', ends_at: '2099-01-06T15:00:00Z', status: 'pending', commune: 'Coquimbo', customer_address:'Calle Prueba 123', service_id:'long', services: { name: services[0].name } }];
       if (path.endsWith('/admin_save_slot')) { slotBody=r.request().postDataJSON(); data='block'; }
       if (path.endsWith('/admin_save_booking')) { editedBookingBody=r.request().postDataJSON(); data=null; }
@@ -95,10 +95,13 @@ const assert = require('node:assert/strict');
     await page.getByText('Reservada · por confirmar', {exact:true}).waitFor();
     await page.getByRole('button',{name:'Editar horario',exact:true}).click();
     assert.equal(await page.locator('#slot [name=commune]').inputValue(),'Coquimbo');
+    assert.equal(await page.locator('#slot [name=gap_minutes]').inputValue(),'20');
+    await page.locator('#slot [name=gap_minutes]').selectOption('25');
     await page.getByRole('button',{name:'Guardar horario',exact:true}).click();
     await page.getByRole('status').filter({hasText:'Horario guardado.'}).waitFor();
     assert.equal(slotBody.p_commune,'Coquimbo');
     assert.equal(slotBody.p_id,'block');
+    assert.equal(slotBody.p_gap_minutes,25);
     await page.getByRole('button',{name:'Editar reserva',exact:true}).click();
     assert.equal(await page.locator('#edit-booking [name=customer_address]').inputValue(),'Calle Prueba 123');
     assert.ok((await page.getByRole('heading', { name: 'Ana Prueba' }).locator('..').innerText()).includes('→'));
